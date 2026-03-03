@@ -84,6 +84,20 @@ export default function PromocodesPage() {
     }, [activeFilters, page]);
 
 
+    const formatToDateTimeLocal = (dateStr: string | null) => {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return '';
+
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
     useEffect(() => {
         if (editId && promocodes.length > 0) {
             const promo = promocodes.find(p => p.id === editId);
@@ -100,9 +114,8 @@ export default function PromocodesPage() {
                 code: promo.code || '',
                 discount_type: promo.discount_type || 'percent',
                 discount_value: promo.discount_value?.toString() || '',
-                // Convert YYYY-MM-DD to datetime-local format (YYYY-MM-DDTHH:MM)
-                starts_at: promo.starts_at ? `${promo.starts_at}T00:00` : '',
-                ends_at: promo.ends_at ? `${promo.ends_at}T23:59` : '',
+                starts_at: formatToDateTimeLocal(promo.starts_at),
+                ends_at: formatToDateTimeLocal(promo.ends_at),
                 max_uses_total: promo.max_uses_total?.toString() || '',
                 max_uses_per_user: promo.max_uses_per_user?.toString() || '',
                 min_order_amount: promo.min_order_amount?.toString() || '',

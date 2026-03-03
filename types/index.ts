@@ -135,7 +135,7 @@ export interface Teacher {
 }
 
 export interface TeacherCreateBody extends Omit<Teacher, 'id' | 'created_at' | 'updated_at' | 'role'> {
-  password: string;
+  password?: string;
 }
 export type TeacherUpdateBody = Partial<TeacherCreateBody>;
 
@@ -173,6 +173,7 @@ export interface Course {
   order_num: number;
   is_public: boolean;
   is_active: boolean;
+  can_buy: boolean;
   created_at: DateString;
   updated_at: DateString;
 }
@@ -305,6 +306,7 @@ export interface AppConfig {
   app_version: AppVersion;
   app_links: AppLinks;
   payment_min_version: string;
+  buy_course: boolean;
   created_at: string;
   updated_at: string;
 }

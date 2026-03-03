@@ -25,12 +25,6 @@ export const userService = {
         await api.delete(`user/${id}/delete`);
     },
 
-    // Update user password (admin function)
-    // Reset user password (admin function)
-    resetPassword: async (userId: string, role: string): Promise<{ password: string }> => {
-        const response = await api.put<{ password: string }>('auth/password/refresh', { user_id: userId, role: role || 'user' });
-        return response.data;
-    },
 
     // PROFILE & ACTIVITY
     getProfile: async (): Promise<UserProfile> => {

@@ -7,7 +7,6 @@ import { Table } from '@/components/ui/Table';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
-import { PasswordUpdateModal } from '@/components/ui/PasswordUpdateModal';
 import { SearchFilters, FilterConfig } from '@/components/ui/SearchFilters';
 import { Pagination } from '@/components/ui/Pagination';
 
@@ -15,9 +14,7 @@ export default function TeachersPage() {
     const [teachers, setTeachers] = useState<Teacher[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
     const [editingTeacher, setEditingTeacher] = useState<Teacher | null>(null);
-    const [selectedTeacherForPassword, setSelectedTeacherForPassword] = useState<Teacher | null>(null);
     const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
     const [page, setPage] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
@@ -27,7 +24,6 @@ export default function TeachersPage() {
         name: '',
         login: '',
         phone_number: '',
-        password: '',
     });
 
     useEffect(() => {
@@ -59,7 +55,6 @@ export default function TeachersPage() {
             name: '',
             login: '',
             phone_number: '',
-            password: '',
         });
         setIsModalOpen(true);
     };
@@ -70,24 +65,10 @@ export default function TeachersPage() {
             name: teacher.name,
             login: teacher.login,
             phone_number: teacher.phone_number,
-            password: '', // Password not editable directly or leave empty to keep same if backend supports
         });
         setIsModalOpen(true);
     };
 
-    const handlePasswordClick = (teacher: Teacher) => {
-        setSelectedTeacherForPassword(teacher);
-        setIsPasswordModalOpen(true);
-    };
-
-    const handlePasswordUpdate = async (teacherId: string) => {
-        try {
-            const response = await teacherService.resetPassword(teacherId);
-            return response.password;
-        } catch (error: any) {
-            throw error;
-        }
-    };
 
     const handleDelete = async (teacher: Teacher) => {
         if (!confirm('Ushbu o\'qituvchini o\'chirishni xohlaysizmi?')) {
@@ -107,14 +88,7 @@ export default function TeachersPage() {
 
         try {
             if (editingTeacher) {
-                // Remove password if empty to avoid overwriting with empty string
-                const { password, ...rest } = formData;
-                const updateData: any = { ...rest };
-                if (password && password.trim() !== '') {
-                    updateData.password = password;
-                }
-
-                await teacherService.update(editingTeacher.id, updateData);
+                await teacherService.update(editingTeacher.id, formData);
             } else {
                 await teacherService.create(formData);
             }
@@ -149,9 +123,6 @@ export default function TeachersPage() {
                 <div className="flex gap-2">
                     <Button onClick={() => handleEdit(item)} variant="outline" size="sm">
                         Tahrirlash
-                    </Button>
-                    <Button onClick={() => handlePasswordClick(item)} variant="outline" size="sm">
-                        Parolni tiklash
                     </Button>
                     <Button onClick={() => handleDelete(item)} variant="destructive" size="sm">
                         O'chirish
@@ -213,15 +184,6 @@ export default function TeachersPage() {
                         onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
                         required
                     />
-                    {!editingTeacher && (
-                        <Input
-                            label="Parol"
-                            type="password"
-                            value={formData.password}
-                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            required
-                        />
-                    )}
                     <div className="flex gap-2 justify-end pt-4">
                         <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
                             Bekor qilish
@@ -231,16 +193,6 @@ export default function TeachersPage() {
                 </form>
             </Modal>
 
-            <PasswordUpdateModal
-                isOpen={isPasswordModalOpen}
-                onClose={() => {
-                    setIsPasswordModalOpen(false);
-                    setSelectedTeacherForPassword(null);
-                }}
-                user={selectedTeacherForPassword}
-                defaultRole="teacher"
-                onSubmit={handlePasswordUpdate}
-            />
         </div>
     );
 }

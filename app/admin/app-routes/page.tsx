@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { toast } from 'sonner';
+import { Switch } from '@/components/ui/switch';
 
 export default function AppConfigPage() {
     const [config, setConfig] = useState<AppConfig | null>(null);
@@ -24,6 +25,7 @@ export default function AppConfigPage() {
         app_version: { android: '', ios: '' },
         app_links: { google: '', apple: '' },
         payment_min_version: '',
+        buy_course: true,
         created_at: '',
         updated_at: ''
     };
@@ -92,7 +94,7 @@ export default function AppConfigPage() {
         }
     };
 
-    const handleChange = (path: string, value: string) => {
+    const handleChange = (path: string, value: any) => {
         if (!config) return;
 
         setConfig(prev => {
@@ -181,6 +183,18 @@ export default function AppConfigPage() {
                             placeholder="1.0.0"
                             required
                         />
+                        <div className="flex items-center justify-between p-3 border rounded-md bg-white">
+                            <div className="space-y-0.5">
+                                <label className="text-sm font-medium">Kurslarni sotib olish</label>
+                                <p className="text-xs text-muted-foreground">
+                                    Ilovada barcha kurslar uchun to'lovni yoqish yoki o'chirish.
+                                </p>
+                            </div>
+                            <Switch
+                                checked={config.buy_course ?? false}
+                                onCheckedChange={(checked) => handleChange('buy_course', checked)}
+                            />
+                        </div>
                     </CardContent>
                 </Card>
 

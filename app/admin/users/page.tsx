@@ -7,7 +7,6 @@ import { courseService } from '@/services/course.service';
 import { tariffService } from '@/services/tariff.service';
 import { Table } from '@/components/ui/Table';
 import { Button } from '@/components/ui/Button';
-import { PasswordUpdateModal } from '@/components/ui/PasswordUpdateModal';
 import { UserCoursesModal } from '@/components/ui/UserCoursesModal';
 import { SearchFilters, FilterConfig } from '@/components/ui/SearchFilters';
 import { Pagination } from '@/components/ui/Pagination';
@@ -17,7 +16,6 @@ export default function UsersPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [tariffs, setTariffs] = useState<Tariff[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isUserCoursesModalOpen, setIsUserCoursesModalOpen] = useState(false);
   const [isGrantModalOpen, setIsGrantModalOpen] = useState(false);
@@ -61,24 +59,6 @@ export default function UsersPage() {
     }
   };
 
-  const handlePasswordClick = (user: User) => {
-    setSelectedUser(user);
-    setIsPasswordModalOpen(true);
-  };
-
-  const handlePasswordUpdate = async (userId: string, role: string) => {
-    try {
-      const response = await userService.resetPassword(userId, role);
-      // alert('Password reset successfully'); // No alert needed, modal shows the password
-      // setIsPasswordModalOpen(false); // Don't close immediately, let user see password in modal
-      // setSelectedUser(null);
-      return response.password;
-    } catch (error: any) {
-      console.error('Failed to reset password:', error);
-      // Error is handled in the modal component
-      throw error;
-    }
-  };
 
   const handleUserCoursesClick = (user: User) => {
     setSelectedUserForCourses(user);
@@ -128,9 +108,6 @@ export default function UsersPage() {
           <Button onClick={() => handleGrantPermissionClick(item)} variant="default" size="sm">
             Ruxsat berish
           </Button>
-          <Button onClick={() => handlePasswordClick(item)} variant="outline" size="sm">
-            Parolni tiklash
-          </Button>
           <Button onClick={() => handleDelete(item)} variant="destructive" size="sm">
             O'chirish
           </Button>
@@ -175,16 +152,6 @@ export default function UsersPage() {
       />
 
 
-      <PasswordUpdateModal
-        isOpen={isPasswordModalOpen}
-        onClose={() => {
-          setIsPasswordModalOpen(false);
-          setSelectedUser(null);
-        }}
-        user={selectedUser}
-        defaultRole="user"
-        onSubmit={handlePasswordUpdate}
-      />
 
       <UserCoursesModal
         isOpen={isUserCoursesModalOpen}

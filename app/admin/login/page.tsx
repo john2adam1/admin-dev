@@ -36,7 +36,6 @@ export default function LoginPage() {
       router.push('/admin/dashboard');
     } catch (err: any) {
       console.error('Login error:', err);
-      // Show the actual error message from the backend
       const errorMessage = err?.response?.data?.message || err?.message || 'Kirishda xatolik. Iltimos, ma\'lumotlarni tekshiring.';
       setError(errorMessage);
       setLoading(false);
@@ -73,4 +72,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

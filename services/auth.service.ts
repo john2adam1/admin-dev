@@ -8,19 +8,19 @@ const TOKEN_KEY = 'admin_token';
 export const authService = {
     // Login
     login: async (data: LoginReq): Promise<AuthResponse> => {
-        // Current backend overview says: POST /auth/admin/login
+        // Correct endpoint for admin login as per swagger: /web/auth/admin/login
+        // Axios base URL already includes /web
         const response = await api.post<AuthResponse>('auth/admin/login', data);
         const { access_token } = response.data;
 
         if (access_token) {
-            // Set cookie for middleware/client access
-            Cookies.set(TOKEN_KEY, access_token, { expires: 7 }); // 7 days
+            Cookies.set(TOKEN_KEY, access_token, { expires: 7 });
         }
 
         return response.data;
     },
 
-    // Change Password
+    // Change Password (if needed for admin)
     changePassword: async (data: PasswordChangeReq): Promise<void> => {
         await api.put('auth/password/change', data);
     },

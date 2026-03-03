@@ -48,6 +48,7 @@ export default function SubjectDetailPage() {
     image_url: string;
     is_public: boolean;
     is_active: boolean;
+    can_buy: boolean;
     order_num: number;
     price: CoursePriceOption[];
     name: { uz: string; ru: string; en: string };
@@ -58,6 +59,7 @@ export default function SubjectDetailPage() {
     image_url: '',
     is_public: true,
     is_active: true,
+    can_buy: true,
     order_num: 1,
     price: [],
     name: { uz: '', ru: '', en: '' },
@@ -113,6 +115,7 @@ export default function SubjectDetailPage() {
       image_url: '',
       is_public: true,
       is_active: true,
+      can_buy: true,
       order_num: courses.length + 1,
       price: [],
       name: { uz: '', ru: '', en: '' },
@@ -127,13 +130,15 @@ export default function SubjectDetailPage() {
     try {
       setIsEditLoading(true);
       const fullCourse = await courseService.getById(course.id);
+      console.log('Full Course Data from Backend:', fullCourse);
       setEditingCourse(fullCourse);
       setFormData({
         subject_id: fullCourse.subject_id,
         teacher_id: fullCourse.teacher_id || '',
         image_url: fullCourse.image_url,
-        is_public: fullCourse.is_public,
-        is_active: fullCourse.is_active,
+        is_public: !!fullCourse.is_public,
+        is_active: !!fullCourse.is_active,
+        can_buy: !!fullCourse.can_buy,
         order_num: fullCourse.order_num,
         price: Array.isArray(fullCourse.price) ? fullCourse.price : [],
         name: fullCourse.name,
@@ -460,7 +465,14 @@ export default function SubjectDetailPage() {
             <label className="text-sm font-medium">Ommaviymi</label>
             <Switch
               checked={formData.is_public}
-              onCheckedChange={(checked) => setFormData({ ...formData, is_public: checked })}
+              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_public: checked }))}
+            />
+          </div>
+          <div className="flex items-center justify-between py-2">
+            <label className="text-sm font-medium">Sotib olish mumkinmi</label>
+            <Switch
+              checked={formData.can_buy}
+              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, can_buy: checked }))}
             />
           </div>
           <div className="flex gap-2 justify-end pt-4">
