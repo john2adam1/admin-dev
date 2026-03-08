@@ -236,10 +236,23 @@ export function UserCoursesModal({ isOpen, onClose, user, allCourses, allTariffs
 
     // ... handleRevoke ... (unchanged)
 
-    // ... columns ... (unchanged)
+    const handleDeletePermission = async (row: CoursePermission) => {
+        if (!confirm('Haqiqatan ham ushbu ruxsatni o\'chirmoqchimisiz? Bu amalni ortga qaytarib bo\'lmaydi.')) {
+            return;
+        }
 
-
-
+        try {
+            setLoading(true);
+            await courseService.deletePermission(row.id);
+            toast.success('Ruxsat muvaffaqiyatli o\'chirildi');
+            loadPermissions(currentPage);
+        } catch (error) {
+            console.error('Failed to delete permission:', error);
+            toast.error('Ruxsatni o\'chirishda xatolik yuz berdi');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const columns = [
         {
@@ -387,6 +400,7 @@ export function UserCoursesModal({ isOpen, onClose, user, allCourses, allTariffs
                                     <Table
                                         data={permissions}
                                         columns={columns}
+                                        onDelete={handleDeletePermission}
                                     />
                                     {permissions.length === 0 && !loading && (
                                         <div className="text-center py-8 text-gray-500 text-sm">
