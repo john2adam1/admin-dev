@@ -76,6 +76,7 @@ export default function DashboardPage() {
           <StatCard label="Hujjatlar" value={stats.documents} helperText={getHelperText()} icon="📄" />
           <StatCard label="Videolar" value={stats.videos} helperText={getHelperText()} icon="🎬" />
           <StatCard label="Foydalanuvchilar" value={stats.users} helperText={getHelperText()} icon="👥" />
+          <StatCard label="Faol foydalanuvchilar" value={stats.active_users} helperText={getHelperText()} icon="✅" />
           <StatCard label="O'qituvchilar" value={stats.teachers} helperText={getHelperText()} icon="👨&zwj;🏫" />
         </div>
       ) : null}

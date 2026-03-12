@@ -119,17 +119,6 @@ export default function UsersPage() {
   const filterConfigs: FilterConfig[] = [
     { key: 'name', label: 'Ism', type: 'text', placeholder: 'Ism bo\'yicha qidirish...' },
     { key: 'phone_number', label: 'Telefon', type: 'text', placeholder: 'Telefon bo\'yicha qidirish...' },
-    {
-      key: 'role',
-      label: 'Rol',
-      type: 'select',
-      options: [
-        { value: 'user', label: 'Foydalanuvchi' },
-        { value: 'admin', label: 'Admin' },
-        { value: 'moderator', label: 'Moderator' },
-      ],
-    },
-    { key: 'is_blocked', label: 'Bloklangan', type: 'boolean' },
   ];
 
   if (loading && users.length === 0) {

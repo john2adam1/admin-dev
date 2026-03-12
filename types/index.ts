@@ -368,6 +368,7 @@ export interface DashboardRes {
   documents: number;
   videos: number;
   users: number;
+  active_users: number;
   teachers: number;
 }
 
