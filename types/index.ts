@@ -303,6 +303,7 @@ export interface AppConfig {
   id: string;
   call_center: string;
   support_url: string;
+  feedback_url: string;
   app_version: AppVersion;
   app_links: AppLinks;
   payment_min_version: string;
@@ -370,6 +371,17 @@ export interface DashboardRes {
   users: number;
   active_users: number;
   teachers: number;
+  // New fields from prod API
+  user_courses: number;
+  active_user_courses: number;
+  inactive_user_courses: number;
+  deleted_user_courses: number;
+  paid_orders: number;
+  admin_orders: number;
+  click_orders: number;
+  cancelled_orders: number;
+  promocodes: number;
+  active_promocodes: number;
 }
 
 export interface GetDashboardReq {

@@ -66,21 +66,66 @@ export default function DashboardPage() {
       {loading ? (
         <DashboardSkeleton />
       ) : stats ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <StatCard label="Tariflar" value={stats.tariffs} helperText={getHelperText()} icon="💰" />
-          <StatCard label="Fanlar" value={stats.subjects} helperText={getHelperText()} icon="📁" />
-          <StatCard label="Kurslar" value={stats.courses} helperText={getHelperText()} icon="🎓" />
-          <StatCard label="Modullar" value={stats.modules} helperText={getHelperText()} icon="📦" />
-          <StatCard label="Darslar" value={stats.lessons} helperText={getHelperText()} icon="📖" />
-          <StatCard label="Testlar" value={stats.tests} helperText={getHelperText()} icon="📝" />
-          <StatCard label="Hujjatlar" value={stats.documents} helperText={getHelperText()} icon="📄" />
-          <StatCard label="Videolar" value={stats.videos} helperText={getHelperText()} icon="🎬" />
-          <StatCard label="Foydalanuvchilar" value={stats.users} helperText={getHelperText()} icon="👥" />
-          <StatCard label="Faol foydalanuvchilar" value={stats.active_users} helperText={getHelperText()} icon="✅" />
-          <StatCard label="O'qituvchilar" value={stats.teachers} helperText={getHelperText()} icon="👨&zwj;🏫" />
+        <div className="space-y-6">
+          {/* Content */}
+          <div>
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Kontent</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <StatCard label="Tariflar" value={stats.tariffs} helperText={getHelperText()} icon="💰" />
+              <StatCard label="Fanlar" value={stats.subjects} helperText={getHelperText()} icon="📁" />
+              <StatCard label="Kurslar" value={stats.courses} helperText={getHelperText()} icon="🎓" />
+              <StatCard label="Modullar" value={stats.modules} helperText={getHelperText()} icon="📦" />
+              <StatCard label="Darslar" value={stats.lessons} helperText={getHelperText()} icon="📖" />
+              <StatCard label="Testlar" value={stats.tests} helperText={getHelperText()} icon="📝" />
+              <StatCard label="Hujjatlar" value={stats.documents} helperText={getHelperText()} icon="📄" />
+              <StatCard label="Videolar" value={stats.videos} helperText={getHelperText()} icon="🎬" />
+            </div>
+          </div>
+
+          {/* Users */}
+          <div>
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Foydalanuvchilar</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <StatCard label="Foydalanuvchilar" value={stats.users} helperText={getHelperText()} icon="👥" />
+              <StatCard label="Faol foydalanuvchilar" value={stats.active_users} helperText={getHelperText()} icon="✅" />
+              <StatCard label="O'qituvchilar" value={stats.teachers} helperText={getHelperText()} icon="👨‍🏫" />
+            </div>
+          </div>
+
+          {/* Course Permissions */}
+          <div>
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Kurs Ruxsatlari</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard label="Jami Ruxsatlar" value={stats.user_courses ?? 0} helperText={getHelperText()} icon="🔑" />
+              <StatCard label="Faol Ruxsatlar" value={stats.active_user_courses ?? 0} helperText={getHelperText()} icon="🟢" />
+              <StatCard label="Nofaol Ruxsatlar" value={stats.inactive_user_courses ?? 0} helperText={getHelperText()} icon="🟡" />
+              <StatCard label="O'chirilgan Ruxsatlar" value={stats.deleted_user_courses ?? 0} helperText={getHelperText()} icon="🔴" />
+            </div>
+          </div>
+
+          {/* Orders */}
+          <div>
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Buyurtmalar</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard label="To'langan" value={stats.paid_orders ?? 0} helperText={getHelperText()} icon="💳" />
+              <StatCard label="Admin orqali" value={stats.admin_orders ?? 0} helperText={getHelperText()} icon="🛡️" />
+              <StatCard label="Click orqali" value={stats.click_orders ?? 0} helperText={getHelperText()} icon="🖱️" />
+              <StatCard label="Bekor qilingan" value={stats.cancelled_orders ?? 0} helperText={getHelperText()} icon="❌" />
+            </div>
+          </div>
+
+          {/* Promocodes */}
+          <div>
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Promokodlar</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard label="Jami Promokodlar" value={stats.promocodes ?? 0} helperText={getHelperText()} icon="🎟️" />
+              <StatCard label="Faol Promokodlar" value={stats.active_promocodes ?? 0} helperText={getHelperText()} icon="✨" />
+            </div>
+          </div>
         </div>
       ) : null}
     </div>
   );
 }
+
 

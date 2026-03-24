@@ -5,6 +5,7 @@ import {
     CourseCreateBody,
     CourseUpdateBody,
     CoursePermission,
+    CoursePermissionCreateBody,
     PaginatedResponse
 } from '@/types';
 
@@ -21,6 +22,41 @@ export const courseService = {
         });
         return response.data;
     },
+
+    getAllWithoutPagination: async (subjectId?: string, filters?: { name?: string; teacher_id?: string; is_public?: boolean }): Promise<PaginatedResponse<Course>> => {
+        let allCourses: Course[] = [];
+        let page = 1;
+        const limit = 100; // Fetch as many as possible per page
+        let lastResponse: PaginatedResponse<Course> | null = null;
+
+        while (true) {
+            const params: any = { page, limit, ...filters };
+            if (subjectId) params.subject_id = subjectId;
+            const response = await api.get<PaginatedResponse<Course>>(RESOURCE_URL, { params });
+            lastResponse = response.data;
+
+            if (lastResponse.data && lastResponse.data.length > 0) {
+                allCourses = [...allCourses, ...lastResponse.data];
+            }
+
+            if (page >= (lastResponse.total_page || 1) || !lastResponse.has_next || lastResponse.data.length === 0) {
+                break;
+            }
+            page++;
+        }
+
+        return {
+            ...lastResponse!,
+            data: allCourses,
+            total: allCourses.length,
+            limit: allCourses.length,
+            page: 1,
+            total_page: 1,
+            has_next: false,
+            has_previous: false
+        };
+    },
+
 
     getById: async (id: string): Promise<Course> => {
         const response = await api.get<Course>(`${RESOURCE_URL}/${id}`);

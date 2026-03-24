@@ -42,7 +42,7 @@ export default function NotificationsPage() {
       setLoading(true);
       const [notifsResponse, coursesResponse] = await Promise.all([
         notificationService.getAll(page, limit, activeFilters),
-        courseService.getAll()
+        courseService.getAllWithoutPagination()
       ]);
       setNotifications(notifsResponse.data);
       const total = notifsResponse.meta?.total_items ||

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Banner } from '@/types';
 import { bannerService } from '@/services/banner.service';
+import { uploadService } from '@/services/upload.service';
 import { getMediaUrl } from '@/lib/mediaUtils';
 import { Table } from '@/components/ui/Table';
 import { Modal } from '@/components/ui/Modal';
@@ -11,6 +12,7 @@ import { MultilangInput } from '@/components/ui/MultilangInput';
 import { Button } from '@/components/ui/Button';
 import { SearchFilters, FilterConfig } from '@/components/ui/SearchFilters';
 import { Pagination } from '@/components/ui/Pagination';
+import { toast } from 'sonner';
 
 export default function BannersPage() {
   const [banners, setBanners] = useState<Banner[]>([]);
@@ -20,6 +22,8 @@ export default function BannersPage() {
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
   const [page, setPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const limit = 10;
 
 
@@ -36,6 +40,25 @@ export default function BannersPage() {
     loadBanners();
   }, [activeFilters, page]);
 
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploading(true);
+      const res = await uploadService.upload(file);
+      const url = res.url;
+      // Apply same URL to all language variants
+      setFormData(prev => ({ ...prev, image_url: { uz: url, ru: url, en: url } }));
+      toast.success('Rasm muvaffaqiyatli yuklandi');
+    } catch (error) {
+      console.error('Upload failed:', error);
+      toast.error('Rasmni yuklashda xatolik');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   const loadBanners = async () => {
     try {
@@ -202,12 +225,37 @@ export default function BannersPage() {
             onChange={(description) => setFormData({ ...formData, description })}
             required
           />
-          <MultilangInput
-            label="Rasm URL"
-            value={formData.image_url}
-            onChange={(image_url) => setFormData({ ...formData, image_url })}
-            required
-          />
+          {/* Image Upload */}
+          <div>
+            <label className="block text-sm font-medium mb-2">Rasm</label>
+            <div className="flex flex-col gap-3">
+              {(formData.image_url.uz || formData.image_url.ru || formData.image_url.en) && (
+                <div className="relative w-full h-40 rounded-md overflow-hidden border bg-gray-50">
+                  <img
+                    src={getMediaUrl(formData.image_url.uz || formData.image_url.ru || formData.image_url.en)}
+                    alt="Banner preview"
+                    className="w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                </div>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+              >
+                {isUploading ? 'Yuklanmoqda...' : (formData.image_url.uz ? '📷 Rasmni almashtirish' : '📷 Rasm yuklash')}
+              </Button>
+            </div>
+          </div>
           <Input
             label="Havola URL"
             value={formData.link_url}

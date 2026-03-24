@@ -22,6 +22,7 @@ export default function AppConfigPage() {
         id: '',
         call_center: '',
         support_url: '',
+        feedback_url: '',
         app_version: { android: '', ios: '' },
         app_links: { google: '', apple: '' },
         payment_min_version: '',
@@ -149,6 +150,13 @@ export default function AppConfigPage() {
                             value={config.support_url ?? ''}
                             onChange={(e) => handleChange('support_url', e.target.value)}
                             placeholder="https://t.me/support"
+                            required
+                        />
+                        <Input
+                            label="Fikr-mulohaza URL"
+                            value={config.feedback_url ?? ''}
+                            onChange={(e) => handleChange('feedback_url', e.target.value)}
+                            placeholder="https://t.me/feedback"
                             required
                         />
                     </CardContent>

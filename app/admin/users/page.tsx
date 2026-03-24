@@ -36,7 +36,7 @@ export default function UsersPage() {
       setLoading(true);
       const [usersResponse, coursesResponse, tariffsResponse] = await Promise.all([
         userService.getAll(page, limit, activeFilters),
-        courseService.getAll(),
+        courseService.getAllWithoutPagination(undefined),
         tariffService.getAll(),
       ]);
       setUsers(usersResponse.data);

@@ -102,7 +102,11 @@ export default function PromocodeDetailPage() {
         {
             key: 'used_at',
             header: 'Ishlatilgan vaqti',
-            render: (item: PromocodeRedemption) => new Date(item.used_at).toLocaleString()
+            render: (item: PromocodeRedemption) => {
+                const dateStr = item.used_at || item.created_at;
+                const date = new Date(dateStr);
+                return isNaN(date.getTime()) ? '-' : date.toLocaleString();
+            }
         },
         {
             key: 'discount_amount',

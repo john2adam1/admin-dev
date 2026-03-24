@@ -36,6 +36,8 @@ export function UserCoursesModal({ isOpen, onClose, user, allCourses, allTariffs
     const [grantForm, setGrantForm] = useState({
         courseId: '',
         tariffId: '',
+        started_at: '',
+        ended_at: '',
     });
 
     useEffect(() => {
@@ -44,7 +46,7 @@ export function UserCoursesModal({ isOpen, onClose, user, allCourses, allTariffs
                 loadPermissions(1); // Reset to page 1 when modal opens
             }
             setIsGranting(false);
-            setGrantForm({ courseId: '', tariffId: '' });
+            setGrantForm({ courseId: '', tariffId: '', started_at: '', ended_at: '' });
         }
     }, [isOpen, user?.id, showGrantForm]);
 
@@ -179,9 +181,9 @@ export function UserCoursesModal({ isOpen, onClose, user, allCourses, allTariffs
                 user_id: user.id,
                 course_id: grantForm.courseId,
                 tariff_id: grantForm.tariffId,
-                started_at: new Date().toISOString().split('T')[0], // YYYY-MM-DD
-                ended_at: (() => {
-                    const endDate = new Date();
+                started_at: grantForm.started_at || new Date().toISOString().split('T')[0], // YYYY-MM-DD
+                ended_at: grantForm.ended_at || (() => {
+                    const endDate = new Date(grantForm.started_at || new Date());
                     // Add months, not days (selectedTariff.duration is in months)
                     endDate.setMonth(endDate.getMonth() + selectedTariff.duration);
                     return endDate.toISOString().split('T')[0]; // YYYY-MM-DD
@@ -194,7 +196,7 @@ export function UserCoursesModal({ isOpen, onClose, user, allCourses, allTariffs
 
             toast.success('Ruxsat berildi');
             setIsGranting(false);
-            setGrantForm({ courseId: '', tariffId: '' });
+            setGrantForm({ courseId: '', tariffId: '', started_at: '', ended_at: '' });
 
             // Close the modal after success
             onClose();
@@ -328,7 +330,24 @@ export function UserCoursesModal({ isOpen, onClose, user, allCourses, allTariffs
                                 <select
                                     className="w-full border rounded p-2"
                                     value={grantForm.tariffId}
-                                    onChange={(e) => setGrantForm({ ...grantForm, tariffId: e.target.value })}
+                                    onChange={(e) => {
+                                        const newTariffId = e.target.value;
+                                        setGrantForm(prev => {
+                                            const updated = { ...prev, tariffId: newTariffId };
+                                            if (newTariffId) {
+                                                const selectedT = allTariffs.find(t => t.id === newTariffId);
+                                                if (selectedT) {
+                                                    const startDate = prev.started_at ? new Date(prev.started_at) : new Date();
+                                                    const endDate = new Date(startDate);
+                                                    endDate.setMonth(endDate.getMonth() + selectedT.duration);
+
+                                                    if (!prev.started_at) updated.started_at = startDate.toISOString().split('T')[0];
+                                                    updated.ended_at = endDate.toISOString().split('T')[0];
+                                                }
+                                            }
+                                            return updated;
+                                        });
+                                    }}
                                 >
                                     <option value="">Tanlang</option>
                                     {/* Valid Tariffs Logic */}
@@ -379,6 +398,37 @@ export function UserCoursesModal({ isOpen, onClose, user, allCourses, allTariffs
                                 }
                             </div >
                         </div >
+                        <div className="mb-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Boshlanish sanasi</label>
+                                <input
+                                    type="date"
+                                    className="w-full border rounded p-2"
+                                    value={grantForm.started_at}
+                                    onChange={(e) => {
+                                        const newStartDate = e.target.value;
+                                        setGrantForm(prev => {
+                                            const updated = { ...prev, started_at: newStartDate };
+                                            // Recalculate end date based on selected tariff
+                                            if (prev.tariffId) {
+                                                const selectedT = allTariffs.find(t => t.id === prev.tariffId);
+                                                if (selectedT && newStartDate) {
+                                                    const endDate = new Date(newStartDate);
+                                                    endDate.setMonth(endDate.getMonth() + selectedT.duration);
+                                                    updated.ended_at = endDate.toISOString().split('T')[0];
+                                                }
+                                            }
+                                            return updated;
+                                        });
+                                    }}
+                                />
+                                {grantForm.ended_at && (
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Tugash sanasi: <strong>{grantForm.ended_at}</strong> (Tarif davomiyligi asosida)
+                                    </p>
+                                )}
+                            </div>
+                        </div>
                         <div className="flex gap-2 justify-end">
                             <Button variant="outline" size="sm" onClick={onClose} disabled={isSaving}>Bekor qilish</Button>
                             <Button

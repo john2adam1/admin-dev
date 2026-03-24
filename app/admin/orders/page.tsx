@@ -59,7 +59,7 @@ export default function OrdersPage() {
                 // Fetch first 100 items for dropdowns
                 const [usersRes, coursesRes, promocodesRes] = await Promise.all([
                     userService.getAll(1, 100),
-                    courseService.getAll(undefined, 1, 100),
+                    courseService.getAllWithoutPagination(),
                     promocodeService.getAll(1, 100)
                 ]);
 
