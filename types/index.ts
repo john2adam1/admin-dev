@@ -243,6 +243,7 @@ export interface User {
   id: ID;
   name: string;
   phone_number: string;
+  email?: string;
   role: 'user' | 'admin' | 'moderator';
   is_blocked: boolean;
   created_at: DateString;

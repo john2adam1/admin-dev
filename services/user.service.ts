@@ -9,7 +9,7 @@ import {
 
 export const userService = {
     // ADMIN Management
-    getAll: async (page = 1, limit = 10, filters?: { name?: string; phone_number?: string; role?: string; is_blocked?: boolean }): Promise<PaginatedResponse<User>> => {
+    getAll: async (page = 1, limit = 10, filters?: { name?: string; phone_number?: string; email?: string; role?: string; is_blocked?: boolean }): Promise<PaginatedResponse<User>> => {
         const response = await api.get<PaginatedResponse<User>>('user', {
             params: { page, limit, ...filters }
         });

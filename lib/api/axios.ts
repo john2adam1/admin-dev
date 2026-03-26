@@ -23,6 +23,10 @@ api.interceptors.request.use(
             config.headers.Authorization = `Bearer ${token}`;
         }
 
+        if (typeof window !== 'undefined') {
+            console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, config.params || config.data);
+        }
+
         return config;
     },
     (error: AxiosError) => {
@@ -32,7 +36,12 @@ api.interceptors.request.use(
 
 // Response Interceptor
 api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        if (typeof window !== 'undefined') {
+            console.log(`[API Response] ${response.status} ${response.config.url}`, response.data);
+        }
+        return response;
+    },
     (error: AxiosError) => {
         // Log error details for debugging
         if (error.response) {

@@ -27,6 +27,10 @@ export default function UsersPage() {
 
 
   useEffect(() => {
+    setPage(1); // Reset to first page when filters change
+  }, [activeFilters]);
+
+  useEffect(() => {
     loadData();
   }, [activeFilters, page]);
 
@@ -34,21 +38,53 @@ export default function UsersPage() {
   const loadData = async () => {
     try {
       setLoading(true);
+      console.log('Fetching users with filters:', activeFilters);
+
+      // If searching, fetch a larger batch for local filtering fallback
+      const searchLimit = Object.keys(activeFilters).length > 0 ? 1000 : limit;
+
       const [usersResponse, coursesResponse, tariffsResponse] = await Promise.all([
-        userService.getAll(page, limit, activeFilters),
+        userService.getAll(page, searchLimit, activeFilters),
         courseService.getAllWithoutPagination(undefined),
         tariffService.getAll(),
       ]);
-      setUsers(usersResponse.data);
+      console.log('Users response:', usersResponse);
+
+      let filteredUsers = usersResponse.data;
+
+      // Local filtering fallback (case-insensitive)
+      if (activeFilters.email) {
+        filteredUsers = filteredUsers.filter(u =>
+          u.email?.toLowerCase().includes(activeFilters.email.toLowerCase())
+        );
+      }
+      if (activeFilters.name) {
+        filteredUsers = filteredUsers.filter(u =>
+          u.name?.toLowerCase().includes(activeFilters.name.toLowerCase())
+        );
+      }
+      if (activeFilters.phone_number) {
+        filteredUsers = filteredUsers.filter(u =>
+          u.phone_number?.includes(activeFilters.phone_number)
+        );
+      }
+
+      setUsers(filteredUsers);
 
       // Handle various pagination response structures
       // Prioritize meta.total_items as it is the most reliable source for total DB count
-      const total = usersResponse.meta?.total_items ||
+      let dbTotal = usersResponse.meta?.total_items ||
         (usersResponse as any).count ||
         (usersResponse as any).total_items ||
         (usersResponse as any).total ||
         0;
-      setTotalItems(total);
+
+      // If we filtered locally, the total items should be the filtered count
+      if (filteredUsers.length < usersResponse.data.length || Object.keys(activeFilters).length > 0) {
+        setTotalItems(filteredUsers.length);
+      } else {
+        setTotalItems(dbTotal);
+      }
 
       setCourses(coursesResponse.data);
       setTariffs(tariffsResponse.data);
@@ -92,6 +128,7 @@ export default function UsersPage() {
       render: (item: User) => item.name
     },
     { key: 'phone_number', header: 'Telefon' },
+    { key: 'email', header: 'Email' },
     {
       key: 'created_at',
       header: 'Yaratilgan vaqti',
@@ -119,6 +156,7 @@ export default function UsersPage() {
   const filterConfigs: FilterConfig[] = [
     { key: 'name', label: 'Ism', type: 'text', placeholder: 'Ism bo\'yicha qidirish...' },
     { key: 'phone_number', label: 'Telefon', type: 'text', placeholder: 'Telefon bo\'yicha qidirish...' },
+    { key: 'email', label: 'Email', type: 'text', placeholder: 'Email bo\'yicha qidirish...' },
   ];
 
   if (loading && users.length === 0) {

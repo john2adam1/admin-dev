@@ -49,6 +49,7 @@ export function SearchFilters({ configs, onFilter, className = "" }: SearchFilte
                             placeholder={config.placeholder}
                             value={filters[config.key] || ''}
                             onChange={(e) => handleChange(config.key, e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                             className="px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]"
                         />
                     )}
