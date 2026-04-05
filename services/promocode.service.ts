@@ -14,6 +14,8 @@ export interface PromoCode {
     min_order_amount: number;
     max_discount: number;
     is_active: boolean;
+    type: string;
+    courses: string[];
     created_at: string;
     updated_at: string;
 }
@@ -29,6 +31,8 @@ export interface PromoCodeCreateReq {
     min_order_amount?: number;
     max_discount?: number;
     is_active?: boolean;
+    type: string;
+    courses: string[];
 }
 
 export interface PromoCodeUpdateReq {
@@ -41,6 +45,8 @@ export interface PromoCodeUpdateReq {
     min_order_amount?: number;
     max_discount?: number;
     is_active?: boolean;
+    type?: string;
+    courses?: string[];
 }
 
 export interface PromoCodeListResponse {

@@ -188,6 +188,26 @@ export default function PromocodeDetailPage() {
                         </div>
                     </CardContent>
                 </Card>
+                <Card>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium">Qamrov</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-sm font-semibold mb-1">
+                            Turi: {promocode.type === 'all' ? 'Barcha kurslar' : 'Tanlangan kurslar'}
+                        </div>
+                        {promocode.type === 'selected' && promocode.courses && (
+                            <div className="mt-2 space-y-1">
+                                <p className="text-xs text-muted-foreground font-medium underline">Kurslar:</p>
+                                <ul className="text-xs list-disc list-inside space-y-0.5 max-h-32 overflow-y-auto">
+                                    {promocode.courses.map((courseId) => (
+                                        <li key={courseId}>{courseId}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
 
             <Separator />

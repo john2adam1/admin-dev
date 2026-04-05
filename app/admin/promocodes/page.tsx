@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { promocodeService, PromoCode } from '@/services/promocode.service';
+import { courseService } from '@/services/course.service';
+import { Course } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Table } from '@/components/ui/Table';
@@ -38,7 +40,10 @@ export default function PromocodesPage() {
         min_order_amount: '',
         max_discount: '',
         is_active: true,
+        type: 'all',
+        courses: [] as string[],
     });
+    const [courses, setCourses] = useState<Course[]>([]);
 
     const fetchPromocodes = async () => {
         try {
@@ -79,8 +84,18 @@ export default function PromocodesPage() {
         }
     };
 
+    const fetchCourses = async () => {
+        try {
+            const res = await courseService.getAllWithoutPagination();
+            setCourses(res.data || []);
+        } catch (error) {
+            console.error('Failed to fetch courses:', error);
+        }
+    };
+
     useEffect(() => {
         fetchPromocodes();
+        fetchCourses();
     }, [activeFilters, page]);
 
 
@@ -121,6 +136,8 @@ export default function PromocodesPage() {
                 min_order_amount: promo.min_order_amount?.toString() || '',
                 max_discount: promo.max_discount?.toString() || '',
                 is_active: promo.is_active ?? true,
+                type: promo.type || 'all',
+                courses: promo.courses || [],
             });
         } else {
             setEditingPromo(null);
@@ -135,6 +152,8 @@ export default function PromocodesPage() {
                 min_order_amount: '',
                 max_discount: '',
                 is_active: true,
+                type: 'all',
+                courses: [],
             });
         }
         setIsModalOpen(true);
@@ -160,6 +179,8 @@ export default function PromocodesPage() {
                 max_uses_per_user: Number(formData.max_uses_per_user) || 0,
                 min_order_amount: Number(formData.min_order_amount) || 0,
                 max_discount: Number(formData.max_discount) || 0,
+                type: formData.type,
+                courses: formData.courses,
             };
 
             if (editingPromo) {
@@ -199,6 +220,15 @@ export default function PromocodesPage() {
                 <Link href={`/admin/promocodes/${item.id}`} className="text-blue-600 hover:underline font-medium">
                     {item.code}
                 </Link>
+            )
+        },
+        {
+            key: 'type',
+            header: 'Turi',
+            render: (item: PromoCode) => (
+                <span className="capitalize">
+                    {item.type === 'all' ? 'Barcha kurslar' : `Tanlangan (${item.courses?.length || 0})`}
+                </span>
             )
         },
         {
@@ -385,6 +415,42 @@ export default function PromocodesPage() {
                             required
                         />
                     </div>
+
+                    <div className="space-y-2">
+                        <Select
+                            label="Promokod turi"
+                            value={formData.type}
+                            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                            options={[
+                                { value: 'all', label: 'Barcha kurslar uchun' },
+                                { value: 'selected', label: 'Tanlangan kurslar uchun' },
+                            ]}
+                        />
+                    </div>
+
+                    {formData.type === 'selected' && (
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Kurslarni tanlang</label>
+                            <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto border rounded-md p-3">
+                                {courses.map((course) => (
+                                    <label key={course.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.courses.includes(course.id)}
+                                            onChange={(e) => {
+                                                const newCourses = e.target.checked
+                                                    ? [...formData.courses, course.id]
+                                                    : formData.courses.filter(id => id !== course.id);
+                                                setFormData({ ...formData, courses: newCourses });
+                                            }}
+                                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                                        />
+                                        <span className="text-sm">{course.name.uz || course.name.ru}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     <div className="flex justify-end gap-2 pt-4">
                         <Button type="button" variant="outline" onClick={handleCloseModal}>
