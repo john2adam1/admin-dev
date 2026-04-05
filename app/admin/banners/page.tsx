@@ -147,13 +147,13 @@ export default function BannersPage() {
       key: 'image_url',
       header: 'Rasm',
       render: (item: Banner) => (
-        <img src={getMediaUrl(item.image_url.uz || item.image_url.ru || item.image_url.en)} alt="Banner" className="w-20 h-12 object-cover" />
+        <img src={getMediaUrl(item.image_url?.uz || item.image_url?.ru || item.image_url?.en || '')} alt="Banner" className="w-20 h-12 object-cover" />
       ),
     },
     {
       key: 'title',
       header: 'Sarlavha',
-      render: (item: Banner) => item.title.uz || item.title.ru || item.title.en
+      render: (item: Banner) => item.title?.uz || item.title?.ru || item.title?.en || 'Noma\'lum'
     },
     { key: 'link_url', header: 'Havola' },
     { key: 'order_num', header: 'Tartib' },

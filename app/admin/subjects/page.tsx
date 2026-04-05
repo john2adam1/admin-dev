@@ -153,7 +153,7 @@ export default function SubjectsPage() {
                     <div className="flex-1">
                       <Link href={`/admin/subjects/${subject.id}`}>
                         <CardTitle className="hover:text-primary transition-colors cursor-pointer">
-                          {subject.name.uz || subject.name.ru || subject.name.en}
+                          {subject.name?.uz || subject.name?.ru || subject.name?.en || 'Noma\'lum'}
                         </CardTitle>
                       </Link>
                       <CardDescription className="mt-1">

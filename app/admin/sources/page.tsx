@@ -183,7 +183,7 @@ export default function SourcesPage() {
     {
       key: 'name',
       header: 'Nom',
-      render: (item: Source) => item.name.uz || item.name.ru || item.name.en
+      render: (item: Source) => item.name?.uz || item.name?.ru || item.name?.en || 'Noma\'lum'
     },
     {
       key: 'type',
@@ -202,7 +202,7 @@ export default function SourcesPage() {
       header: 'URL',
       render: (item: Source) => (
         <a
-          href={getMediaUrl(item.url.uz || item.url.ru || item.url.en)}
+          href={getMediaUrl(item.url?.uz || item.url?.ru || item.url?.en || '')}
           target="_blank"
           rel="noopener noreferrer"
           className="text-blue-600 hover:underline flex items-center gap-1.5 truncate max-w-xs"
@@ -215,7 +215,7 @@ export default function SourcesPage() {
               <line x1="12" y1="15" x2="12" y2="3"></line>
             </svg>
           )}
-          {item.url.uz || item.url.ru || item.url.en || 'URL yo\'q'}
+          {item.url?.uz || item.url?.ru || item.url?.en || 'URL yo\'q'}
         </a>
       ),
     },

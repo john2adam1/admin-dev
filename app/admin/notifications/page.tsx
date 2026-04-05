@@ -172,13 +172,13 @@ export default function NotificationsPage() {
     {
       key: 'title',
       header: 'Sarlavha',
-      render: (item: Notification) => item.title.uz || item.title.en
+      render: (item: Notification) => item.title?.uz || item.title?.en || 'Noma\'lum'
     },
     {
       key: 'message',
       header: 'Xabar',
       render: (item: Notification) => (
-        <div className="max-w-md truncate">{item.message.uz || item.message.en}</div>
+        <div className="max-w-md truncate">{item.message?.uz || item.message?.en || ''}</div>
       ),
     },
     {

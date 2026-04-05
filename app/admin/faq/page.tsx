@@ -111,7 +111,7 @@ export default function FAQPage() {
         {
             key: 'question',
             header: 'Savol',
-            render: (item: FAQ) => item.question.uz || item.question.ru || item.question.en
+            render: (item: FAQ) => item.question?.uz || item.question?.ru || item.question?.en || 'Noma\'lum'
         },
         {
             key: 'order_num',

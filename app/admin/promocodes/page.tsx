@@ -445,7 +445,9 @@ export default function PromocodesPage() {
                                             }}
                                             className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
                                         />
-                                        <span className="text-sm">{course.name.uz || course.name.ru}</span>
+                                        <span className="text-sm">
+                                            {course.name?.uz || course.name?.ru || 'Nomsiz kurs'}
+                                        </span>
                                     </label>
                                 ))}
                             </div>

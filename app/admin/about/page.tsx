@@ -104,7 +104,7 @@ export default function AboutPage() {
         {
             key: 'title',
             header: 'Sarlavha',
-            render: (item: About) => item.title.uz || item.title.ru || item.title.en
+            render: (item: About) => item.title?.uz || item.title?.ru || item.title?.en || 'Noma\'lum'
         },
         {
             key: 'order_num',

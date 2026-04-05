@@ -218,7 +218,7 @@ export default function SubjectDetailPage() {
 
   const breadcrumbItems = [
     { label: 'Fanlar', href: '/admin/subjects' },
-    { label: subject.name.uz || subject.name.ru || subject.name.en },
+    { label: subject.name?.uz || subject.name?.ru || subject.name?.en || 'Noma\'lum' },
   ];
 
   const teacherOptions = teachers.map((t) => ({
@@ -233,7 +233,7 @@ export default function SubjectDetailPage() {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            {subject.name.uz || subject.name.ru || subject.name.en}
+            {subject.name?.uz || subject.name?.ru || subject.name?.en || 'Noma\'lum'}
           </h1>
           <p className="text-muted-foreground mt-1">Ushbu fanga tegishli kurslarni boshqarish</p>
         </div>

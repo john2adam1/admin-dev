@@ -87,7 +87,7 @@ export default function OrdersPage() {
 
                 setCoursesOptions(courses.map((c: any) => {
                     const name = c.name || c.title || 'Unknown Course';
-                    const label = typeof name === 'object'
+                    const label = (name && typeof name === 'object')
                         ? (name.uz || name.ru || name.en || 'Unknown Course')
                         : String(name);
                     return { value: c.id, label };
