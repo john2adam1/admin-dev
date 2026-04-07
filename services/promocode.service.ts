@@ -16,6 +16,7 @@ export interface PromoCode {
     is_active: boolean;
     type: string;
     courses: string[];
+    course_id?: string;
     created_at: string;
     updated_at: string;
 }
@@ -33,6 +34,7 @@ export interface PromoCodeCreateReq {
     is_active?: boolean;
     type: string;
     courses: string[];
+    course_id?: string;
 }
 
 export interface PromoCodeUpdateReq {
@@ -47,6 +49,7 @@ export interface PromoCodeUpdateReq {
     is_active?: boolean;
     type?: string;
     courses?: string[];
+    course_id?: string;
 }
 
 export interface PromoCodeListResponse {
@@ -79,7 +82,7 @@ export const promocodeService = {
     },
 
     delete: async (id: string): Promise<void> => {
-        await api.delete(`promocode/${id}`);
+        await api.delete(`promocode/${id}/delete`);
     },
 
     getRedemptions: async (id: string, page = 1, limit = 10, filters?: any): Promise<PromocodeRedemptionListResponse> => {

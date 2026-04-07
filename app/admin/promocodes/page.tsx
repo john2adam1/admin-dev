@@ -136,7 +136,7 @@ export default function PromocodesPage() {
                 min_order_amount: promo.min_order_amount?.toString() || '',
                 max_discount: promo.max_discount?.toString() || '',
                 is_active: promo.is_active ?? true,
-                type: promo.type || 'all',
+                type: promo.type === 'course' ? 'selected' : (promo.type || 'all'),
                 courses: promo.courses || [],
             });
         } else {
@@ -164,24 +164,65 @@ export default function PromocodesPage() {
         setEditingPromo(null);
     };
 
+    const formatDateForApi = (dateStr: string) => {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return '';
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+
+        return `${year}-${month}-${day}`;
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         try {
+            // Robust payload building
             const payload: any = {
                 code: formData.code,
                 discount_type: formData.discount_type,
                 discount_value: Number(formData.discount_value) || 0,
                 is_active: formData.is_active,
-                starts_at: formData.starts_at.split('T')[0], // YYYY-MM-DD format
-                ends_at: formData.ends_at.split('T')[0], // YYYY-MM-DD format
-                max_uses_total: Number(formData.max_uses_total) || 0,
-                max_uses_per_user: Number(formData.max_uses_per_user) || 0,
-                min_order_amount: Number(formData.min_order_amount) || 0,
-                max_discount: Number(formData.max_discount) || 0,
-                type: formData.type,
-                courses: formData.courses,
+                starts_at: formatDateForApi(formData.starts_at),
+                ends_at: formatDateForApi(formData.ends_at),
+                type: formData.type === 'selected' ? 'course' : formData.type, // Map 'selected' UI value to 'course' backend value
             };
+
+            if (formData.type === 'selected') {
+                payload.courses = formData.courses;
+                payload.course_ids = formData.courses;
+                payload.course_id = formData.courses[0] || ''; // Fallback for singular field
+            } else {
+                payload.courses = [];
+                payload.course_ids = [];
+                payload.course_id = '';
+            }
+
+            // Map usage limits with redundant names for compatibility
+            if (formData.max_uses_total !== '') {
+                const val = Number(formData.max_uses_total);
+                payload.max_uses_total = val;
+                payload.max_uses = val;
+            }
+            if (formData.max_uses_per_user !== '') {
+                const val = Number(formData.max_uses_per_user);
+                payload.max_uses_per_user = val;
+                payload.max_per_user = val; // Some APIs use this
+            }
+            if (formData.min_order_amount !== '') {
+                const val = Number(formData.min_order_amount);
+                payload.min_order_amount = val;
+                payload.min_order = val; // Some APIs use this
+            }
+            if (formData.max_discount !== '') {
+                const val = Number(formData.max_discount);
+                payload.max_discount = val;
+            }
+
+            console.log('Sending Promocode Payload:', payload);
 
             if (editingPromo) {
                 // Update
@@ -196,7 +237,11 @@ export default function PromocodesPage() {
             handleCloseModal();
             fetchPromocodes();
         } catch (error: any) {
-            const message = error.response?.data?.message || error.message || 'Promokodni saqlashda xatolik';
+            console.error('Promocode Error Details:', error.response?.data);
+            const backendMessage = typeof error.response?.data === 'string'
+                ? error.response.data
+                : JSON.stringify(error.response?.data);
+            const message = error.response?.data?.message || backendMessage || error.message || 'Promokodni saqlashda xatolik';
             toast.error(`Xatolik: ${message}`);
         }
     };
@@ -225,11 +270,18 @@ export default function PromocodesPage() {
         {
             key: 'type',
             header: 'Turi',
-            render: (item: PromoCode) => (
-                <span className="capitalize">
-                    {item.type === 'all' ? 'Barcha kurslar' : `Tanlangan (${item.courses?.length || 0})`}
-                </span>
-            )
+            render: (item: PromoCode) => {
+                // Log item to see actual structure from backend
+                if (item.code === '1222saaaa' || item.type === 'course' || item.type === 'selected') {
+                    console.log(`Promocode [${item.code}] data:`, item);
+                }
+                const courseCount = item.courses?.length || (item.course_id ? 1 : 0);
+                return (
+                    <span className="capitalize">
+                        {item.type === 'all' ? 'Barcha kurslar' : `Tanlangan (${courseCount})`}
+                    </span>
+                );
+            }
         },
         {
             key: 'discount',
@@ -345,7 +397,7 @@ export default function PromocodesPage() {
                             value={formData.discount_type}
                             onChange={(e) => setFormData({ ...formData, discount_type: e.target.value as any })}
                             options={[
-                                { value: 'percent', label: 'Foiz' },
+                                { value: 'percent', label: 'Foiz (%)' },
                                 { value: 'fixed', label: 'Aniq summa' },
                             ]}
                         />
