@@ -69,8 +69,18 @@ export default function PromocodesPage() {
                 // Unknown response structure
             }
 
-            setPromocodes(promocodesData);
-            setPromocodes(promocodesData);
+            // Fetch full details for each promocode to get course lists correctly
+            const fullPromocodes = await Promise.all(
+                promocodesData.map(async (p) => {
+                    try {
+                        return await promocodeService.getOne(p.id);
+                    } catch (e) {
+                        return p;
+                    }
+                })
+            );
+
+            setPromocodes(fullPromocodes);
             const total = res.count ||
                 (res as any).total_items ||
                 (res as any).meta?.total_items ||
@@ -122,22 +132,30 @@ export default function PromocodesPage() {
         }
     }, [editId, promocodes]);
 
-    const handleOpenModal = (promo?: PromoCode) => {
+    const handleOpenModal = async (promo?: PromoCode) => {
         if (promo) {
-            setEditingPromo(promo);
+            let fullPromo = promo;
+            // Always fetch fresh data to ensure we have all fields for editing
+            try {
+                fullPromo = await promocodeService.getOne(promo.id);
+            } catch (error) {
+                console.error('Failed to fetch promo details:', error);
+            }
+
+            setEditingPromo(fullPromo);
             setFormData({
-                code: promo.code || '',
-                discount_type: promo.discount_type || 'percent',
-                discount_value: promo.discount_value?.toString() || '',
-                starts_at: formatToDateTimeLocal(promo.starts_at),
-                ends_at: formatToDateTimeLocal(promo.ends_at),
-                max_uses_total: promo.max_uses_total?.toString() || '',
-                max_uses_per_user: promo.max_uses_per_user?.toString() || '',
-                min_order_amount: promo.min_order_amount?.toString() || '',
-                max_discount: promo.max_discount?.toString() || '',
-                is_active: promo.is_active ?? true,
-                type: promo.type === 'course' ? 'selected' : (promo.type || 'all'),
-                courses: promo.courses || [],
+                code: fullPromo.code || '',
+                discount_type: fullPromo.discount_type || 'percent',
+                discount_value: fullPromo.discount_value?.toString() || '',
+                starts_at: formatToDateTimeLocal(fullPromo.starts_at),
+                ends_at: formatToDateTimeLocal(fullPromo.ends_at),
+                max_uses_total: fullPromo.max_uses_total?.toString() || '',
+                max_uses_per_user: fullPromo.max_uses_per_user?.toString() || '',
+                min_order_amount: fullPromo.min_order_amount?.toString() || '',
+                max_discount: fullPromo.max_discount?.toString() || '',
+                is_active: fullPromo.is_active ?? true,
+                type: fullPromo.type === 'course' ? 'selected' : (fullPromo.type || 'all'),
+                courses: fullPromo.courses || [],
             });
         } else {
             setEditingPromo(null);
@@ -188,10 +206,10 @@ export default function PromocodesPage() {
                 is_active: formData.is_active,
                 starts_at: formatDateForApi(formData.starts_at),
                 ends_at: formatDateForApi(formData.ends_at),
-                type: formData.type === 'selected' ? 'course' : formData.type, // Map 'selected' UI value to 'course' backend value
+                type: formData.type === 'selected' ? 'course' : formData.type,
             };
 
-            if (formData.type === 'selected') {
+            if (formData.type === 'selected' || formData.type === 'course' || payload.type === 'course') {
                 payload.courses = formData.courses;
                 payload.course_ids = formData.courses;
                 payload.course_id = formData.courses[0] || ''; // Fallback for singular field

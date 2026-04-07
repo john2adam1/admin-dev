@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { promocodeService, PromoCode } from '@/services/promocode.service';
-import { PromocodeRedemption } from '@/types';
+import { courseService } from '@/services/course.service';
+import { PromocodeRedemption, Course } from '@/types';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +23,7 @@ export default function PromocodeDetailPage() {
     const [promocode, setPromocode] = useState<PromoCode | null>(null);
     const [redemptions, setRedemptions] = useState<PromocodeRedemption[]>([]);
     const [loading, setLoading] = useState(true);
+    const [courses, setCourses] = useState<Course[]>([]);
     const [redemptionsLoading, setRedemptionsLoading] = useState(true);
     const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
     const [page, setPage] = useState(1);
@@ -32,6 +34,7 @@ export default function PromocodeDetailPage() {
     useEffect(() => {
         if (id) {
             loadData();
+            fetchCourses();
         }
     }, [id]);
 
@@ -56,6 +59,15 @@ export default function PromocodeDetailPage() {
             toast.error('Promokodni yuklashda xatolik');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchCourses = async () => {
+        try {
+            const res = await courseService.getAllWithoutPagination();
+            setCourses(res.data || []);
+        } catch (error) {
+            console.error('Failed to fetch courses:', error);
         }
     };
 
@@ -201,11 +213,18 @@ export default function PromocodeDetailPage() {
                                 <p className="text-xs text-muted-foreground font-medium underline">Kurslar:</p>
                                 <ul className="text-xs list-disc list-inside space-y-0.5 max-h-32 overflow-y-auto">
                                     {promocode.courses ? (
-                                        promocode.courses.map((courseId) => (
-                                            <li key={courseId}>{courseId}</li>
-                                        ))
+                                        promocode.courses.map((courseId) => {
+                                            const course = courses.find(c => c.id === courseId);
+                                            return (
+                                                <li key={courseId}>{course?.name?.uz || course?.name?.ru || courseId}</li>
+                                            );
+                                        })
                                     ) : (
-                                        <li>{promocode.course_id}</li>
+                                        <li>
+                                            {courses.find(c => c.id === promocode.course_id)?.name?.uz ||
+                                                courses.find(c => c.id === promocode.course_id)?.name?.ru ||
+                                                promocode.course_id}
+                                        </li>
                                     )}
                                 </ul>
                             </div>
