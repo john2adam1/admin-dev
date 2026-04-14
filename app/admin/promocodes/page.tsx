@@ -97,7 +97,13 @@ export default function PromocodesPage() {
     const fetchCourses = async () => {
         try {
             const res = await courseService.getAllWithoutPagination();
-            setCourses(res.data || []);
+            // Show all courses that CAN be bought and HAVE price options (paid courses)
+            const filteredCourses = (res.data || []).filter(c =>
+                c.can_buy &&
+                Array.isArray(c.price) &&
+                c.price.length > 0
+            );
+            setCourses(filteredCourses);
         } catch (error) {
             console.error('Failed to fetch courses:', error);
         }
@@ -153,6 +159,11 @@ export default function PromocodesPage() {
                 ? normalizedCourses
                 : (fullPromo.course_id ? [fullPromo.course_id] : []);
 
+            // Set type with fallback for legacy data (course -> selected)
+            const resolvedType = fullPromo.type === 'course' || fullPromo.type === 'selected'
+                ? 'selected'
+                : (fullPromo.type || 'all');
+
             setFormData({
                 code: fullPromo.code || '',
                 discount_type: fullPromo.discount_type || 'percent',
@@ -164,7 +175,7 @@ export default function PromocodesPage() {
                 min_order_amount: fullPromo.min_order_amount?.toString() || '',
                 max_discount: fullPromo.max_discount?.toString() || '',
                 is_active: fullPromo.is_active ?? true,
-                type: fullPromo.type === 'course' ? 'selected' : (fullPromo.type || 'all'),
+                type: resolvedType,
                 courses: finalCourses,
             });
         } else {
@@ -211,30 +222,27 @@ export default function PromocodesPage() {
                 is_active: formData.is_active,
                 starts_at: formatDateForApi(formData.starts_at),
                 ends_at: formatDateForApi(formData.ends_at),
-                type: formData.type === 'selected' ? 'course' : formData.type,
                 max_uses_total: formData.max_uses_total !== '' ? Number(formData.max_uses_total) : 0,
                 max_uses_per_user: formData.max_uses_per_user !== '' ? Number(formData.max_uses_per_user) : 0,
                 min_order_amount: formData.min_order_amount !== '' ? Number(formData.min_order_amount) : 0,
                 max_discount: formData.max_discount !== '' ? Number(formData.max_discount) : 0,
             };
 
-            if (payload.type === 'course') {
+            // Set type - backend explicitly expects 'selected'
+            payload.type = formData.type;
+
+            if (formData.type === 'selected') {
                 payload.courses = formData.courses;
-                if (formData.courses.length > 0) {
-                    payload.course_id = formData.courses[0];
-                }
             } else {
                 payload.courses = [];
-                payload.course_id = '';
             }
 
             console.log('Sending Promocode Payload:', payload);
 
             if (editingPromo) {
-                // For updates, we usually don't send the code if it's not changeable, 
-                // but some APIs require it or at least don't mind it.
-                // Let's keep it in the payload for now.
-                await promocodeService.update(editingPromo.id, payload as any);
+                // For updates, we remove the 'code' as it's typically immutable
+                const { code, ...updatePayload } = payload;
+                await promocodeService.update(editingPromo.id, updatePayload as any);
                 toast.success('Promokod muvaffaqiyatli yangilandi');
             } else {
                 // Create
@@ -518,7 +526,14 @@ export default function PromocodesPage() {
                                             className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
                                         />
                                         <span className="text-sm">
-                                            {course.name?.uz || course.name?.ru || 'Nomsiz kurs'}
+                                            {(() => {
+                                                const name = course.name || (course as any).title;
+                                                if (!name) return 'Nomsiz kurs';
+                                                if (typeof name === 'object') {
+                                                    return name.uz || name.ru || name.en || 'Nomsiz kurs';
+                                                }
+                                                return String(name);
+                                            })()}
                                         </span>
                                     </label>
                                 ))}

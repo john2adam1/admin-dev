@@ -74,7 +74,7 @@ export default function PromocodeDetailPage() {
     const fetchRedemptions = async () => {
         try {
             setRedemptionsLoading(true);
-            const res = await promocodeService.getRedemptions(id, page, limit, activeFilters);
+            const res = await promocodeService.getRedemptions(id, page, limit, { ...activeFilters, status: 'paid' });
             console.log('API Response for Redemptions:', res);
             setRedemptions(res.data || []);
             setTotalItems(res.total || (res as any).meta?.total_items || (res.data || []).length);
