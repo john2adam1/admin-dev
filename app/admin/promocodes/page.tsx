@@ -143,6 +143,16 @@ export default function PromocodesPage() {
             }
 
             setEditingPromo(fullPromo);
+            // Normalize courses: extract IDs if they are objects, and fallback to course_id if courses array is empty
+            const rawCourses = fullPromo.courses || [];
+            const normalizedCourses = rawCourses.map((c: any) =>
+                typeof c === 'string' ? c : (c?.id || c)
+            ).filter(Boolean);
+
+            const finalCourses = normalizedCourses.length > 0
+                ? normalizedCourses
+                : (fullPromo.course_id ? [fullPromo.course_id] : []);
+
             setFormData({
                 code: fullPromo.code || '',
                 discount_type: fullPromo.discount_type || 'percent',
@@ -155,7 +165,7 @@ export default function PromocodesPage() {
                 max_discount: fullPromo.max_discount?.toString() || '',
                 is_active: fullPromo.is_active ?? true,
                 type: fullPromo.type === 'course' ? 'selected' : (fullPromo.type || 'all'),
-                courses: fullPromo.courses || [],
+                courses: finalCourses,
             });
         } else {
             setEditingPromo(null);
@@ -186,12 +196,7 @@ export default function PromocodesPage() {
         if (!dateStr) return '';
         const date = new Date(dateStr);
         if (isNaN(date.getTime())) return '';
-
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-
-        return `${year}-${month}-${day}`;
+        return date.toISOString();
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -207,45 +212,29 @@ export default function PromocodesPage() {
                 starts_at: formatDateForApi(formData.starts_at),
                 ends_at: formatDateForApi(formData.ends_at),
                 type: formData.type === 'selected' ? 'course' : formData.type,
+                max_uses_total: formData.max_uses_total !== '' ? Number(formData.max_uses_total) : 0,
+                max_uses_per_user: formData.max_uses_per_user !== '' ? Number(formData.max_uses_per_user) : 0,
+                min_order_amount: formData.min_order_amount !== '' ? Number(formData.min_order_amount) : 0,
+                max_discount: formData.max_discount !== '' ? Number(formData.max_discount) : 0,
             };
 
-            if (formData.type === 'selected' || formData.type === 'course' || payload.type === 'course') {
+            if (payload.type === 'course') {
                 payload.courses = formData.courses;
-                payload.course_ids = formData.courses;
-                payload.course_id = formData.courses[0] || ''; // Fallback for singular field
+                if (formData.courses.length > 0) {
+                    payload.course_id = formData.courses[0];
+                }
             } else {
                 payload.courses = [];
-                payload.course_ids = [];
                 payload.course_id = '';
-            }
-
-            // Map usage limits with redundant names for compatibility
-            if (formData.max_uses_total !== '') {
-                const val = Number(formData.max_uses_total);
-                payload.max_uses_total = val;
-                payload.max_uses = val;
-            }
-            if (formData.max_uses_per_user !== '') {
-                const val = Number(formData.max_uses_per_user);
-                payload.max_uses_per_user = val;
-                payload.max_per_user = val; // Some APIs use this
-            }
-            if (formData.min_order_amount !== '') {
-                const val = Number(formData.min_order_amount);
-                payload.min_order_amount = val;
-                payload.min_order = val; // Some APIs use this
-            }
-            if (formData.max_discount !== '') {
-                const val = Number(formData.max_discount);
-                payload.max_discount = val;
             }
 
             console.log('Sending Promocode Payload:', payload);
 
             if (editingPromo) {
-                // Update
-                const { code, ...updatePayload } = payload;
-                await promocodeService.update(editingPromo.id, updatePayload as any);
+                // For updates, we usually don't send the code if it's not changeable, 
+                // but some APIs require it or at least don't mind it.
+                // Let's keep it in the payload for now.
+                await promocodeService.update(editingPromo.id, payload as any);
                 toast.success('Promokod muvaffaqiyatli yangilandi');
             } else {
                 // Create
@@ -256,11 +245,28 @@ export default function PromocodesPage() {
             fetchPromocodes();
         } catch (error: any) {
             console.error('Promocode Error Details:', error.response?.data);
-            const backendMessage = typeof error.response?.data === 'string'
-                ? error.response.data
-                : JSON.stringify(error.response?.data);
-            const message = error.response?.data?.message || backendMessage || error.message || 'Promokodni saqlashda xatolik';
-            toast.error(`Xatolik: ${message}`);
+
+            // Extract meaningful error information from backend
+            let errorMessage = 'Promokodni saqlashda xatolik';
+
+            if (error.response?.data) {
+                const data = error.response.data;
+                if (typeof data === 'string') {
+                    errorMessage = data;
+                } else if (data.message) {
+                    errorMessage = Array.isArray(data.message) ? data.message.join(', ') : data.message;
+                } else if (data.error) {
+                    errorMessage = data.error;
+                } else {
+                    errorMessage = JSON.stringify(data);
+                }
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+
+            toast.error(`Xatolik: ${errorMessage}`, {
+                duration: 5000,
+            });
         }
     };
 
@@ -289,10 +295,6 @@ export default function PromocodesPage() {
             key: 'type',
             header: 'Turi',
             render: (item: PromoCode) => {
-                // Log item to see actual structure from backend
-                if (item.code === '1222saaaa' || item.type === 'course' || item.type === 'selected') {
-                    console.log(`Promocode [${item.code}] data:`, item);
-                }
                 const courseCount = item.courses?.length || (item.course_id ? 1 : 0);
                 return (
                     <span className="capitalize">
